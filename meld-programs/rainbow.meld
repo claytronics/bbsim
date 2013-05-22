@@ -1,5 +1,3 @@
-include #inc/color.meld
-
 type route neighbor(node, node, int).
 type level(node, max int).
 type route bottomNeighbor(node, node).

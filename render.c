@@ -6,11 +6,6 @@
  *  @bugs No known bugs.
  */
 
-/* - OpenGL Libraries - */
-#include <OpenGL/gl.h>
-#include <OpenGL/glu.h>
-#include <GLUT/glut.h>
-
 /* - Standard Libraries - */
 #include <math.h>
 #include <stdlib.h>

@@ -7,10 +7,6 @@
  *  @bugs No known bugs.
  */
 
-#include <OpenGL/gl.h>
-#include <OpenGL/glu.h>
-#include <GLUT/glut.h>
-
 #include <stdlib.h>
 
 /* - Menu Library - */

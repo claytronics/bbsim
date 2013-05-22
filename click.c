@@ -1,8 +1,3 @@
-/* - OpenGL Libraries - */
-#include <OpenGL/gl.h>
-#include <OpenGL/glu.h>
-#include <GLUT/glut.h>
-
 #include "click.h"
 #include "render.h"
 
