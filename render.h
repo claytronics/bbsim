@@ -10,9 +10,9 @@
 #define __RENDER_H_
 
 /* - OpenGL Libraries - */
-#include <GL/gl.h>
-#include <GL/glu.h>
-#include <GL/glut.h>
+#include <OpenGL/gl.h>
+#include <OpenGL/glu.h>
+#include <GLUT/glut.h>
 
 /* - Blinky Block Libaries - */
 #include "block.h"
