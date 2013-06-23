@@ -9,4 +9,4 @@ type dist(node, min int).
 !dist(Y, N)
    -o !dist(X, N + 1).
 
-!dist(X, N) -o !setColor2(X, N % NUM_COLORS).
+!dist(X, N) -o !setColor2(X, N % num_colors).

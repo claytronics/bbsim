@@ -1,8 +1,8 @@
 /** @file viewer.c
- *  
+ *
  *  The entry point for the project.  This file contains the window
  *  initialization and mouse input handling.
- *  
+ *
  *  @author Bobby Prochnow (rprochno)
  *  @bugs No known bugs.
  */
@@ -39,8 +39,8 @@ int g_iRightMouseButton  = 0;
 typedef enum { ROTATE, TRANSLATE } CONTROLSTATE;
 CONTROLSTATE g_ControlState = ROTATE; // initial state
 
-/* - Accelerometer Variable (?) 
-  This variable doesn't seem to actually do anything. 
+/* - Accelerometer Variable (?)
+  This variable doesn't seem to actually do anything.
   It toggles when you press the z key, but does nothing
   else in this routine. */
 int accelActive = 0;                  // initial state
@@ -62,7 +62,7 @@ void add_block (int screenX, int screenY);
 void remove_block (int screenX, int screenY);
 
 /** @brief Model display function.
- *  
+ *
  *  @return Void.
  */
 void display()
@@ -70,13 +70,13 @@ void display()
     clear_screen();
     set_transform(g_vLandRotate, g_vLandTranslate);
     redraw_world();
-    glutSwapBuffers();    
+    glutSwapBuffers();
 }
 
 /** @brief Idle callback function.
- *  
+ *
  *  Posts for the scene to redisplay.
- *  
+ *
  *  @return Void.
  */
 void do_idle()
@@ -85,10 +85,10 @@ void do_idle()
 }
 
 /** @brief Mouse drag callback function.
- *  
- *  Converts mouse drags into information about 
+ *
+ *  Converts mouse drags into information about
  *  rotation/translation/scaling.
- *  
+ *
  *  @param x The x position of the mouse.
  *  @param y The y position of the mouse.
  *  @return Void.
@@ -132,9 +132,9 @@ void mouse_drag(int x, int y)
 
 
 /** @brief Mouse idle callback function.
- *  
+ *
  *  Updates the mouse position.
- *  
+ *
  *  @param x The x position of the mouse.
  *  @param y The y position of the mouse.
  *  @return Void.
@@ -146,11 +146,11 @@ void mouse_idle(int x, int y)
 }
 
 /** @brief Mouse click callback function.
- *  
+ *
  *  Check the mouse button states:
  *     Crtl key -> Zooming
  *     otherwise -> Rotating
- *  
+ *
  *  @param button The button being interacted with.
  *  @param state The state of the button.
  *  @param x The x position of the mouse.
@@ -347,10 +347,10 @@ void process_accel (float vMouseDelta[])
 }
 
 /** @brief Code entry point.
- * 
- *  Accepts input and performs operations according to the provided 
+ *
+ *  Accepts input and performs operations according to the provided
  *  specification.
- *  
+ *
  *  @param argc Number of arguments.
  *  @param argv Array of arguments.
  *  @return Exit code.
@@ -368,9 +368,9 @@ int viewer_init (int argc, char ** argv)
     perspective_init(WINDOW_WIDTH, WINDOW_HEIGHT);
     material_init();
     light_init();
-    
+
     clear_screen();
-    
+
     world_init();
 
     return 0;
@@ -389,14 +389,14 @@ void event_loop()
 }
 
 /** @brief Initializes the window.
- *  
+ *
  *  @return Void.
  */
 void window_init ()
 {
     /* RGB Double buffer with depth buffer */
-    glutInitDisplayMode(GLUT_DEPTH | GLUT_RGBA | GLUT_DOUBLE);  
-    
+    glutInitDisplayMode(GLUT_DEPTH | GLUT_RGBA | GLUT_DOUBLE);
+
     /* Create Window of size 640 x 480 */
     glutInitWindowSize(WINDOW_WIDTH, WINDOW_HEIGHT);
     glutInitWindowPosition(0, 0);
@@ -404,9 +404,9 @@ void window_init ()
 }
 
 /** @brief Initializes the callback functions.
- *  
+ *
  *  Installs the mouse, display, and idle callback functions.
- *  
+ *
  *  @return Void.
  */
 void callback_init ()
@@ -416,18 +416,16 @@ void callback_init ()
 
     /* replace with any animate code */
     glutIdleFunc(do_idle);
-  
+
     /* callback for mouse drags */
     glutMotionFunc(mouse_drag);
-  
+
     /* callback for idle mouse movement */
     glutPassiveMotionFunc(mouse_idle);
-  
+
     /* callback for mouse button changes */
     glutMouseFunc(mouse_button);
 
     /* callback for accelerometer locking and other hotkeys */
     glutKeyboardFunc(key_button);
 }
-
-
