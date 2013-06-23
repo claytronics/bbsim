@@ -2,6 +2,7 @@
 .,*
 sim
 Makefile.externs
+meldvm
 
 # Object files
 *.o
@@ -20,3 +21,6 @@ Makefile.externs
 *.exe
 *.out
 *.app
+
+# Log file
+*.log
