@@ -6,6 +6,6 @@ type linear tap (node).
 color(X, 0).
 
 color(X, N), tap(X)
-   -o color(X, (N + 1) % num_colors),
+   -o color(X, (N + 1) % NUM_COLORS),
       !setColor2(X, N).
 

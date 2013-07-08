@@ -9,33 +9,33 @@ type route neighbor(node, node, int).
 type linear tap(node).
 type linear toadd(node).
 
-const one_color = 4.
-const zero_color = 5.
-const load_color = 1.
+const ONE_COLOR = 4.
+const ZERO_COLOR = 5.
+const LOAD_COLOR = 1.
 
-!setColor2(N, zero_color).
+!setColor2(N, ZERO_COLOR).
 zero(N).
 
 tap(N) -o inc(N).
 
 inc(N),
 zero(N)
-   -o one(N), !setColor2(N, one_color).
+   -o one(N), !setColor2(N, ONE_COLOR).
 
 inc(N),
 one(N),
 !neighbor(N, M, WEST)
    -o zero(N),
-      !setColor2(N, zero_color),
+      !setColor2(N, ZERO_COLOR),
       toadd(M),
       inc(M)@+1s.
 
 toadd(M),
 one(M),
 !neighbor(M, N, WEST)
-   -o one(M), !setColor2(M, load_color), toadd(N).
+   -o one(M), !setColor2(M, LOAD_COLOR), toadd(N).
 
 toadd(M),
 zero(M)
-   -o !setColor2(M, load_color), zero(M).
+   -o !setColor2(M, LOAD_COLOR), zero(M).
 

@@ -3,15 +3,15 @@ include #inc/color.meld
 type linear red(node).
 type route neighbor(node, node, int).
 
-!setColor2(X, blue).
+!setColor2(X, BLUE).
 
 1 = node2int(X) % 4
    -o red(X),
-      !setColor2(X, red).
+      !setColor2(X, RED).
 
 [:random Y |
    !neighbor(X, Y, _),
    red(X)]
-   -o !setColor2(X, blue)@+200ms,
+   -o !setColor2(X, BLUE)@+200ms,
       red(Y)@+200ms,
-      !setColor2(Y, red)@+200ms.
+      !setColor2(Y, RED)@+200ms.

@@ -9,12 +9,12 @@ type linear doTap(node, node).
 type linear tap(node).
 type route neighbor(node, node, int).
 
-color(X, blue).
-!setColor2(X, blue).
+color(X,BLUE).
+!setColor2(X, BLUE).
 
 color(X, N),
 tap(X)
-   -o !setColor2(X, (N + 1) % num_colors),
+   -o !setColor2(X, (N + 1) % NUM_COLORS),
       color(X, N + 1),
       doTap(X, X).
 
@@ -23,7 +23,7 @@ tappedBy(X, Y),
 X <> Y
    -o color(X, N + 1),
       doTap(X, Y),
-      !setColor2(X, (N + 1) % num_colors).
+      !setColor2(X, (N + 1) % NUM_COLORS).
 
 [:random Z |
    !neighbor(X, Z, _),
