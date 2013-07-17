@@ -17,7 +17,6 @@
 
 char* progname;			/* name of this program */
 char* configname = 0;		/* name of config file */
-int numberOfRobots = 0;		/* number of blinkblocks in system */
 bool debug = false;             /* debug-mode */
 
 int lastBlockId = 0;
@@ -81,7 +80,7 @@ int main(int argc, char** argv)
    bool   configured = false;
    bool   graphics = true;
    char* port = "5000";
-
+   numberOfRobots = 0;		/* number of blinkblocks in system */
    --argc;
    progname = *argv++;
    while (argc > 0 && (argv[0][0] == '-')) {
@@ -140,9 +139,13 @@ int main(int argc, char** argv)
    initTimeKeeping();
 
    // vm initialization
-   vmInit(port);
+    // starts a thread listener
+    //listener accepts a connection, calls vmStarted which initializes blocks
+   vmInit(port); 
    fprintf(stderr, "Listening on %s\n", port);
-   if (vmUseThreads) msg2vm(NULL, CMD_MODE_ND, 0);
+
+   //allocate message buffer and set command,size ..sending msg to vm via datagram 
+  // if (vmUseThreads) msg2vm(NULL, CMD_MODE_ND, 0);
 
    // create blocklist and initialize mutex
    initBlockList();
@@ -236,7 +239,7 @@ checkTest(alldone)
   return 0;
 }
 
-// will return 0 if never called before, other return 1
+// will return 0 if never called before, other return 1F
 int 
 alreadyExecuted(int enter)
 {
@@ -267,9 +270,10 @@ vmStarted()
 
   // get blocks started
   Block *block;
-
+  printf("In vmStarted.\n");
   Q_FOREACH(block, getBlockList(), blockLink) {
+    //block=getBlock(id);
     startBlock(block);
-  }
+ }
   Q_ENDFOREACH(getBlockList());
 }

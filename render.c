@@ -5,6 +5,14 @@
  *  @author Bobby Prochnow (rprochno)
  *  @bugs No known bugs.
  */
+
+/* - OpenGL Libraries - */
+#ifndef __APPLE__
+#include <GL/gl.h>
+#include <GL/glu.h>
+#include <GL/glut.h>
+#endif
+
 /* - Standard Libraries - */
 #include <math.h>
 #include <stdlib.h>
@@ -26,7 +34,7 @@ GLfloat light_ambient[]  =   {0.2f, 0.2f, 0.2f, 1.0f};
 GLfloat light_diffuse[]  =   {0.5f, 0.5f, 0.5f, 0.5f};
 GLfloat light_pos[]      =   {2.0f, 2.0f, 0.0f, 0.0f};
 GLfloat light_specular[] =   {0.5f, 0.5f, 0.5f, 0.5f};
-
+ 
 /* - Material Properties - */
 GLfloat mat_shininess[1]  =   {0.0f};
 GLfloat mat_specular[4]   =   {0.0f, 0.0f, 0.0f, 0.0f};
@@ -43,9 +51,9 @@ GLUquadricObj *quad;
 #define PRONG_OFFSET    .25f
 
 /** @brief Initializes lighting for our scene.
- *
+ *  
  *  Creates one light and enables lighting for the OpenGL scene.
- *
+ *  
  *  @return Void.
  */
 void light_init ()
@@ -55,9 +63,9 @@ void light_init ()
     glLightfv(GL_LIGHT0, GL_DIFFUSE,  light_diffuse);
     glLightfv(GL_LIGHT0, GL_POSITION, light_pos);
     glLightfv(GL_LIGHT0, GL_SPECULAR, light_specular);
-
+        
     glEnable(GL_LIGHTING);
-    glEnable(GL_LIGHT0);
+    glEnable(GL_LIGHT0);    
 }
 
 /** @brief Initializes the material for the model in our scene.
@@ -82,37 +90,37 @@ void material_init ()
 }
 
 /** @brief Initializes the perspective for our scene.
- *
+ *  
  *  Establishes the far and near clipping planes for the perspective,
  *  enables back-face culling, and enables depth buffering.
- *
+ *  
  *  @return Void.
  */
 void perspective_init (int window_width, int window_height)
 {
     glMatrixMode(GL_PROJECTION);
-
+    
     glLoadIdentity();
     glViewport(0, 0, window_width, window_height);
     gluPerspective(FOV, ((float)window_width / (float)window_height),
 		   Z_NEAR, Z_FAR);
-
-    /* ready to draw models */
+    
+    /* ready to draw models */ 
     glMatrixMode(GL_MODELVIEW);
 
-    /* back-face culling */
+    /* back-face culling */ 
     glEnable(GL_CULL_FACE);
     glCullFace(GL_BACK);
-
-    /* enable depth buffering */
+    
+    /* enable depth buffering */ 
     glDepthFunc(GL_LEQUAL);
     glEnable(GL_DEPTH_TEST);
 }
 
 /** @brief Initializes the display lists for our blinky blocks environment.
- *
+ *  
  *  Initializes block information for the rendering library.
- *
+ * 
  *  @param blocks The array of blocks.
  *  @param block_count The number of blocks in the array.
  *  @return Void.
@@ -135,7 +143,7 @@ void set_display_mode (GLenum disp_mode)
 }
 
 /** @brief Adds onscreen text directions for using the simulator
- *
+ * 
  *  Writes several lines of bitmap characters that describe how to
  *  move around and add and delete blocks.
  *
@@ -144,7 +152,7 @@ void set_display_mode (GLenum disp_mode)
 void show_directions ()
 {
 	int num_lines = 5;
-
+	
 	char lines[num_lines][65];
 	int i, j;
 
@@ -171,20 +179,20 @@ void show_directions ()
  	        glutBitmapCharacter(GLUT_BITMAP_HELVETICA_18, lines[i][j]);
 	    }
 	}
-
+	
 	// Change color back to whatever it was before
 	glColor3f(1.0, 1.0, 1.0);
 	glPopMatrix();
 }
 
 /** @brief Redraws the current block world.
- *
+ *  
  *  @return Void.
  */
 void redraw_world ()
 {
 	Block *block;
-
+	
 	glInitNames();
 	glPushName(-1);
 	Q_FOREACH(block, getBlockList(), blockLink)
@@ -218,7 +226,7 @@ void draw_block_top(GLfloat x_off, GLfloat z_off)
 }
 
 /** @brief Draws the body of a block
- *
+ *  
  *  @param name The identifier for this block.
  *  @return Void.
  */
@@ -244,7 +252,7 @@ void draw_block_body(GLuint name)
         glVertex3f( BLOCK_SIZE/2,-BLOCK_SIZE/2,-BLOCK_SIZE/2);
         glEnd();
 
-        // front face
+        // front face                                         
 	glLoadName(ENCODE_NAME(name, North));
         glBegin(GL_QUADS);
 	glNormal3f( 0.0, 0.0, 1.0 );
@@ -254,7 +262,7 @@ void draw_block_body(GLuint name)
         glVertex3f( BLOCK_SIZE/2,-BLOCK_SIZE/2, BLOCK_SIZE/2);
         glEnd();
 
-        // back face
+        // back face                                          
 	glLoadName(ENCODE_NAME(name, South));
         glBegin(GL_QUADS);
 	glNormal3f( 0.0, 0.0,-1.0 );
@@ -264,7 +272,7 @@ void draw_block_body(GLuint name)
         glVertex3f( BLOCK_SIZE/2, BLOCK_SIZE/2,-BLOCK_SIZE/2);
         glEnd();
 
-        // right face
+        // right face                                         
 	glLoadName(ENCODE_NAME(name, West));
         glBegin(GL_QUADS);
 	glNormal3f( 1.0, 0.0, 0.0 );
@@ -274,7 +282,7 @@ void draw_block_body(GLuint name)
         glVertex3f( BLOCK_SIZE/2,-BLOCK_SIZE/2,-BLOCK_SIZE/2);
         glEnd();
 
-        // left face
+        // left face                                          
 	glLoadName(ENCODE_NAME(name, East));
         glBegin(GL_QUADS);
 	glNormal3f(-1.0, 0.0, 0.0 );
@@ -292,7 +300,7 @@ void draw_block_body(GLuint name)
 void draw_block_model(GLuint name)
 {
 	draw_block_body(name);
-
+	
     // draw the top
 	glLoadName(ENCODE_NAME(name, Top));
 	draw_block_top(PRONG_OFFSET, PRONG_OFFSET);
@@ -341,9 +349,9 @@ void draw_block (Block *block)
 }
 
 /** @brief Clears the screen.
- *
+ *  
  *  Clears the color and depth buffers.
- *
+ *  
  *  @return Void.
  */
 void clear_screen ()
@@ -358,9 +366,9 @@ void clear_screen ()
 }
 
 /** @brief Sets the model transformation state.
- *
+ *  
  *  Sets the scale for any following rendering.
- *
+ *  
  *  @param vLandRotate The rotation matrix {x, y, z}.
  *  @param vLandTranslate The translation matrix {x, y, z}.
  *  @return Void.
@@ -378,7 +386,7 @@ void set_transform (float vLandRotate[], float vLandTranslate[])
 }
 
 void sauverEcran(char *titre)
-{
+{ 
 
   fprintf(stderr, "saverEcran\n");
   FILE *fichier = fopen(titre,"wb");

@@ -14,7 +14,7 @@ type vacant(node, int).
 !neighbor(N, X, P), P <> 0, P <> 5
    -o !sideNeighbor(N, X).
 
-!neighbor(X,Y,0) -0 !neighbor(Y,X,0).
+!neighbor(X,Y,0) -o !neighbor(Y,X,0).
 
 !noBottomNeighbor(N) -o !level(N, 0).
 !sideNeighbor(N, X), !level(X, H) -o !level(N, H).

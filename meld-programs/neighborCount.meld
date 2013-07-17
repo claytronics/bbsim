@@ -2,4 +2,4 @@ include #inc/color.meld
 
 type neighborCount(node, int).
 
-!neighborCount(X, N) -o !setColor2(X, N % num_colors).
+!neighborCount(X, N) -o !setColor2(X, N % NUM_COLORS).

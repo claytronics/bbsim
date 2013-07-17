@@ -1,9 +1,16 @@
+/* - OpenGL Libraries - */
+#ifndef __APPLE__
+#include <GL/gl.h>
+#include <GL/glu.h>
+#include <GL/glut.h>
+#endif
+
 #include "click.h"
 #include "render.h"
 
 #define BUFFER_SIZE 512
 
-Block*
+Block* 
 processHits (GLint hits, GLuint buffer[], int *face)
 {
 	GLuint depth;
@@ -25,11 +32,11 @@ processHits (GLint hits, GLuint buffer[], int *face)
 			depth  = (GLuint)buffer[index*4+1];
 		}
 	}
-
+	
 	bIndex = DECODE_INDEX(choose);
 	if (face != NULL)
 		*face = DECODE_FACE(choose);
-
+	
 	// TODO: we can do this by embedding the pointer in the name
 	// instead of naively searching through all blocks
 	Q_FOREACH(block, getBlockList(), blockLink)

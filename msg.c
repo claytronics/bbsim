@@ -10,8 +10,10 @@
 #include "block.h"
 #include "sim.h"
 #include "vm.h"
+#include "csapp.h"
 
 static int msgverbose = 0;
+static bool allConnected=false;
 
 static int is_data_available(int sock);
 static int force_read(int sock);
@@ -36,6 +38,9 @@ vmcmd2str(VMCommand cmd)
   case CMD_ADD_VACANT: return "addVnct";
   case CMD_DEL_VACANT: return "delVnct";
   case STOP: return "stopvm";
+  case CMD_SETID: return "setid";
+  case CMD_SENDMSG: return "sendMessage";
+  case CMD_RECVMSG: return "receiveMessage";
   default:	sprintf(buffer, "??%d??", cmd); return buffer;
   }
   return "??";
@@ -105,20 +110,18 @@ msg2string(message* m, char* buffer)
   return buffer;
 }
 
-static struct sockaddr_in servaddr, cliaddr;
+static struct sockaddr_in cliaddr;
 static socklen_t clilen;
-static int listenfd;
-static int connfd;
-static int haveConnection = 0;
+
 
 // 1 -> connection closed, 0 -> ok
 int
-drain_incoming(void)
+drain_incoming(int connfd)
 {
   while (is_data_available(connfd)) {
     if (!force_read(connfd)) {
-      fprintf(stderr, "Connection closed\n");
-      return 1;
+     // fprintf(stderr, "Connection closed\n");
+     // return 1;
     }
   }
   return 0;
@@ -136,8 +139,15 @@ static MsgList* mtail = NULL;
 void
 static sendit(message* msg)
 {
+  NodeID nodeid = msg->node;
+  Block* block = getBlock(nodeid);
+  if(block==NULL){
+    printf("Message not sent to block %d \n",nodeid);
+    return;
+  }
+  int connfd=block->connfd;
   int size = msg->size + sizeof(message_type);			/* in bytes */
-  if (!haveConnection) {
+  if (connfd==-1) {
     // must queue
     MsgList* ml = calloc(1, sizeof(MsgList));
     ml->content = calloc(1, size);
@@ -154,7 +164,7 @@ static sendit(message* msg)
   // we have a connection
 
   // first drain incoming if necessary
-  drain_incoming();
+  drain_incoming(connfd);
   // now send everything in que
   while (mhead != NULL) {
     message* m = mhead->content;
@@ -171,7 +181,7 @@ static sendit(message* msg)
     MsgList* next = mhead->next;
     free(mhead);
     mhead = next;
-    if (drain_incoming()) return;
+    if (drain_incoming(connfd)) return;
   }
   mhead = mtail = NULL;
 
@@ -217,7 +227,8 @@ msg2vm(Block* dest, VMCommand cmd, Time timestamp, ...)
     buffer.data.create.start = va_arg(ap, message_type);
     size += 2;
     break;
-  case CMD_DEL_NBR:
+  case CMD_DEL_NBR
+  :
     buffer.data.delNeighbor.face = va_arg(ap, message_type);
     size += 1;
     break;
@@ -239,8 +250,12 @@ msg2vm(Block* dest, VMCommand cmd, Time timestamp, ...)
     buffer.data.neighborCount.total = va_arg(ap, message_type);
     size += 1;
     break;
+	
+	case CMD_SETID:
+	break;
 
   }
+
   buffer.size = size*sizeof(message_type);
   buffer.command = cmd;
   if (dest)
@@ -263,12 +278,14 @@ handle_data(message *msg)
   NodeID nodeid = msg->node;
   Block* block = getBlock(nodeid);
   Time ts = (Time)msg->timestamp;
-
+  if(block!=NULL)
   block->msgTargetsDelta++;
   if (1 || msgverbose) fprintf(stderr, "Got message of %d from %u @ %u\n", (int)msg->size, (int)nodeid, (int)ts);
   if (block == NULL) err("unknown block with id %d in msg\n", nodeid);
   switch(msg->command) {
-  case SET_COLOR: 
+  case SET_COLOR:
+    printf("SET_COLOR received for block : %d | connfd : %d\n",block->id,block->connfd);
+ 
     fprintf(stderr, "%02u <- LEDS = (%d, %d, %d, %d)\n",
 	    (int)nodeid, (int)msg->data.color.r, (int)msg->data.color.g, (int)msg->data.color.b, (int)msg->data.color.i);
     block->simLEDr=msg->data.color.r;
@@ -276,20 +293,16 @@ handle_data(message *msg)
     block->simLEDb=msg->data.color.b;
     block->simLEDi=msg->data.color.i;
     break;
-
-  case CMD_HAS_RUN:
-    {
-      int numother = (int)msg->data.runtil.num;
-      fprintf(stderr, "%02u til:%d comm with:%d%c", (int)nodeid, ts, numother, (numother == 0 ? '\n' : ':'));
-      updateTime(block, ts, 0);
-      int i;
-      for (i=0; i<numother; i++) {
-        fprintf(stderr, "%d%s", (int)msg->data.runtil.other[i], (i+1)==numother?"\n":", ");
-        needsSchedule(getBlock(msg->data.runtil.other[i]), ts);
-      }
-   }
-    break;
-
+	
+	case SEND_MESSAGE:
+	printf("SEND_MESSAGE received\n");
+	NodeID tempID=msg->node;
+	msg->node=msg->data.send_message.dest_nodeID;
+	msg->data.send_message.dest_nodeID=tempID;
+	msg->command=RECEIVE_MESSAGE;
+	sendit(msg);
+	break;
+	
   default:
     fprintf(stderr, "Unknown msg: %d\n", (int)msg->command);
   }
@@ -338,7 +351,7 @@ is_data_available(int sock)
    fd_set sready;
    struct timeval nowait;
 
-   if (!haveConnection) return 0; /* no connection, so no data */
+   if (sock==-1) return 0; /* no connection, so no data */
 
    if (msgverbose) fprintf(stderr, "ida\n");
    FD_ZERO(&sready);
@@ -355,76 +368,73 @@ static char* portname;
 static void*
 listener(void* ignoreme)
 {
-  int yes = 1;
+	int port=atoi(portname);
+	unsigned int sock, s, maxsock;
+    fd_set socks;
+    fd_set readsocks;
+  	   
+	sock=Open_listenfd(port);
 
-   haveConnection = 0;
-   listenfd = socket(AF_INET, SOCK_STREAM, 0);
-   bzero(&servaddr, sizeof(servaddr));
-   servaddr.sin_family = AF_INET;
-   servaddr.sin_addr.s_addr = htonl(INADDR_ANY);
-   servaddr.sin_port = htons(atoi(portname));
-   int status = setsockopt(listenfd, SOL_SOCKET, SO_REUSEADDR, &yes, sizeof(int));
-   if (status != 0) err("setsockopt failed %d:%s\n", errno, strerror(errno));
-   
-   status = bind(listenfd, (struct sockaddr *)&servaddr, sizeof(servaddr));
-   if (status != 0) err("bind failed %d: %s\n", errno, strerror(errno));
+	printf("Listening on port:%d\n",port);
+    /* Set up the fd_set */
+    FD_ZERO(&socks);
+    FD_SET(sock, &socks);
+    maxsock = sock;
+	int nodeID=0;
+	/* Main loop */
+    while (1) {
+        
+        readsocks = socks;
+        if (select(maxsock + 1, &readsocks, NULL, NULL, NULL) == -1) {
+            perror("select");
+            return (void*)1;
+        }
+        for (s = 0; s <= maxsock; s++) {
+			    if (FD_ISSET(s, &readsocks)) {
+            if (s == sock) {
+                    /* New connection */
+//					printf("Shall be accepting the connection.\n");
+                    int newsock;
+                    struct sockaddr_in their_addr;
+                    unsigned int size = sizeof(struct sockaddr_in);
+                    newsock = accept(sock, (struct sockaddr*)&their_addr, &size);
+					nodeID++;
+					Block* b=getBlock(nodeID);
+					b->connfd=newsock;
+					msg2vm(b,CMD_SETID,b->localTime);
+          if(!allConnected&&(nodeID==numberOfRobots)){
+					vmStarted();
+					allConnected=true;
+					}
+          if(allConnected){
+            startBlock(b);
+          }
+					printf("Accepted a connection.\n");
+				   	if (newsock == -1) {
+                        perror("accept");
+                    }
+					else {
+                        printf("Got a connection from %s on port %d\n", inet_ntoa(their_addr.sin_addr), htons(their_addr.sin_port));
+						FD_SET(newsock, &socks);
+                        if (newsock > maxsock) {
+                            maxsock = newsock;
+                        }
+                    }
+                }else// read from already accepted socket
+                {
+//					printf("Reading from an accepted socket:%d\n", s);
+                   int check = (force_read(s));
+				   if(check==0);
+				  // if(check == 0) //sock closed, remove from ur list 
+				  // FD_CLR(s,&socks);    
+                }
+            }
+        }
 
-   status = listen(listenfd, 1024);
-   if (status != 0) err("listen failed %d: %s\n", errno, strerror(errno));
-
-   clilen = sizeof(cliaddr);
-   connfd = accept(listenfd, (struct sockaddr *)&cliaddr, &clilen);
-   if (connfd == -1) err("accept failed %d: %s\n", errno, strerror(errno));
-
-   fprintf(stderr, "Got a connection!\n");
-   haveConnection = 1;
-
-   vmStarted();
-   if (vmUseThreads) {
-     // just read message and let vm schedule nodes
-     while (force_read(connfd)) {
-       if (msgverbose) fprintf(stderr, "got message\n");
-     }
-   } else {
-     // we have to manage running of nodes
-     int nothingHappened = 0;
-     while (1) {
-       int incoming = 0;
-       while (is_data_available(connfd)) {
-         incoming++;
-         nothingHappened = 0;
-         if (!force_read(connfd)) {
-           fprintf(stderr, "Connection closed\n");
-           break;
-         }
-       }
-       if (!incoming) {
-         // nothing was there, sleep for a bit
-         usleep(10000);
-       }
-       if (checkSchedule()) {
-         // we sheduled something
-         nothingHappened = 0;
-       } else if (nothingHappened++ > 10) {
-         fprintf(stderr, "Increment gts: %d\n", globalTimeStamp);
-         Block* b;
-         ForEachBlock(b) {
-           showBlock(stderr, b);
-         }
-         globalTimeStamp++;
-       }
-     }
-   }
-   // all done?
-   // final status report
-   printf("Final Status\n");
-   Block* block;
-   ForEachBlock(block) {
-     showBlock(stdout, block);
-   }
-   checkTest(1);
-   exit(0);
-   return (void*)0;
+    }
+    close(sock);
+	
+	return (void*)0;
 }
 
 // get started, make connection, spawn thread
