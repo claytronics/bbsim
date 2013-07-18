@@ -28,7 +28,7 @@ struct _Block
 {
   /* unique block indentification */
   NodeID id;
-
+  int connfd;
   /* block physical properties */
   int x;
   int y;
@@ -61,7 +61,7 @@ struct _Block
 void err(char* prompt, ...);
 
 void initBlockList(void);
-Block *createBlock(int x, int y, int z);
+Block *createBlock(int x, int y, int z,char *pathToFile);
 void destroyBlock(Block *block);
 void startBlock(Block *block);
 BlockList *getBlockList(void);

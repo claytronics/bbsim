@@ -4,12 +4,13 @@
 #include "block.h"
 #include "vm.h"
 #include "sim.h"
-
+#include "csapp.h"
+#include "heap.h"
+#include "config.h"
 static unsigned int nextBlockId = 1;
 static BlockList blockList;  // = Q_STATIC_INIT;
 static Block** allBlocks = NULL;
 static int allBlockSize = 0;
-
 // initializes the access mutex
 void initBlockList()
 {
@@ -42,14 +43,14 @@ startBlock(Block *block)
 }
 
 Block *
-createBlock(int x, int y, int z)
+createBlock(int x, int y, int z, char *pathToFile)
 {
   Block* newBlock;
 
   newBlock = calloc(1, sizeof(Block));
   if (newBlock == NULL)
     return newBlock;
-
+  newBlock->connfd=-1;
   newBlock->id = nextBlockId++;
   newBlock->x = x;
   newBlock->y = y;
@@ -73,8 +74,23 @@ createBlock(int x, int y, int z)
 
   //fprintf(stderr, "made block, inserting into Q\n");
   registerBlock(newBlock);
-
-  msg2vm(newBlock, CMD_CREATE, newBlock->localTime, 1, newBlock->id);
+   char* prog="/home/ankit/Desktop/branch/meld/examples/rainbow1.m";
+   char* path[6];
+   char* sched="sl";
+   path[0]="/home/ankit/Desktop/branch/meld/meld";
+   path[1]="-f";
+if(pathToFile!=NULL)
+	path[2]=pathToFile;
+else
+    path[2]=prog;
+	path[3]="-c";
+	path[4]=sched;
+	path[5]=NULL;
+   if(fork()==0){
+       execve("/home/ankit/Desktop/branch/meld/meld",path,NULL);
+    }
+    
+//  msg2vm(newBlock, CMD_CREATE, newBlock->localTime, 1, newBlock->id);
 
   return newBlock;
 }
@@ -112,8 +128,8 @@ getBlock(NodeID id)
 {
   if (id > nextBlockId) err("Asked for %d higher than num allocated blocks %d", id, nextBlockId);
   Block* block = allBlocks[id];
-  if (block == NULL) err("Aksed for %d which has NULL entry in allBlocks", id);
-  if (block->destroyed) err("Asked for %d which was destroyed", id);
+  if (block == NULL) printf("Asked for %d which is not present in the list.\n",id);//err("Aksed for %d which has NULL entry in allBlocks", id);
+  if (block->destroyed); //err("Asked for %d which was destroyed", id);
   return block;
 }
 
@@ -187,8 +203,6 @@ tellNeighborsDestroyed(Block *b, FaceBlock* list)
   }
   if (list != NULL) list[j].block = NULL;
 }
-
-#include "heap.h"
 
 int
 bLocalTimeCompare(Block* a, Block* b)

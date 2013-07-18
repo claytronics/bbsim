@@ -10,7 +10,7 @@
 char* configFile = NULL;
 int   configCount = 0;
 
-void randomConfig(int maxcount)
+void randomConfig(int maxcount, char *pathToFile)
 {
   bool grid[11][11][11];
   Block* stack[11*11*11];
@@ -23,7 +23,7 @@ void randomConfig(int maxcount)
   memset(grid, 0, sizeof(grid));
 
   if (maxcount == 0) maxcount = 25;
-  b = createBlock(0, 0, 0);
+  b = createBlock(0, 0, 0,pathToFile);
   grid[5][5][5] = true;
 
   srand( time(NULL) );
@@ -70,7 +70,7 @@ void randomConfig(int maxcount)
 		continue;
 
 	      grid[5+x][5+y][5+z] = true;
-	      b = createBlock(x, y, z);
+	      b = createBlock(x, y, z, pathToFile);
 
 	      count++;
 	      stack[stack_idx] = b;
@@ -81,7 +81,7 @@ void randomConfig(int maxcount)
     }
 }
 
-void readConfig(char* name)
+void readConfig(char* name,char *pathToFile)
 {
 	FILE* f = fopen(name, "r");
 	if (f == NULL)
@@ -101,8 +101,8 @@ void readConfig(char* name)
 		if (num != 4)
 		  err("Input from %s:%d expected 4, got %d [%s]", name, line, num, buffer);
 		//fprintf(stderr, "create %d at: %d, %d, %d\n", line, x, y, z);
-		createBlock(x, y, z);
-
+		createBlock(x, y, z,pathToFile);
+		numberOfRobots++;
 		line++;
 	}
 	fclose(f);

@@ -17,7 +17,6 @@
 
 char* progname;			/* name of this program */
 char* configname = 0;		/* name of config file */
-int numberOfRobots = 0;		/* number of blinkblocks in system */
 bool debug = false;             /* debug-mode */
 
 int lastBlockId = 0;
@@ -56,7 +55,6 @@ void help(void)
   fprintf(stderr, "\t-R <num>\tgenerates a random block configuration of <num> blocks\n");
   fprintf(stderr, "\t-d\t\tdebug statements enabled\n");
   fprintf(stderr, "\t-n\t\tdisables graphics\n");
-
   exit(0);
 }
 
@@ -80,8 +78,9 @@ int main(int argc, char** argv)
    int    orig_argc = argc;
    bool   configured = false;
    bool   graphics = true;
+   pathToFile=NULL;
    char* port = "5000";
-
+   numberOfRobots = 0;		/* number of blinkblocks in system */
    --argc;
    progname = *argv++;
    while (argc > 0 && (argv[0][0] == '-')) {
@@ -127,6 +126,13 @@ int main(int argc, char** argv)
     	  argc--;  argv++;
     	  configured = true;
     	  break;
+      case 'f':
+         pathToFile=argv[1];
+        argc--;
+        argv++;
+        printf("The path is %s",pathToFile);        
+        break; 
+        
       default:
     	  help();
       }
@@ -134,15 +140,23 @@ int main(int argc, char** argv)
    }
 
    if (debug) fprintf(stdout, "initial configuration\n");
-
-   // start timer
+    if(pathToFile==NULL) 
+    {
+    printf("Please enter the file path using the -f flag\n"); 
+    exit(0);
+    }
+    // start timer
    
    initTimeKeeping();
 
    // vm initialization
-   vmInit(port);
+    // starts a thread listener
+    //listener accepts a connection, calls vmStarted which initializes blocks
+   vmInit(port); 
    fprintf(stderr, "Listening on %s\n", port);
-   if (vmUseThreads) msg2vm(NULL, CMD_MODE_ND, 0);
+
+   //allocate message buffer and set command,size ..sending msg to vm via datagram 
+  // if (vmUseThreads) msg2vm(NULL, CMD_MODE_ND, 0);
 
    // create blocklist and initialize mutex
    initBlockList();
@@ -154,9 +168,9 @@ int main(int argc, char** argv)
      help();
    } else {
      if (configFile != NULL)
-       readConfig(configFile);
+       readConfig(configFile, pathToFile);
      else
-       randomConfig(configCount);
+       randomConfig(configCount,pathToFile);
    }
 
    if (graphics) {
@@ -236,7 +250,7 @@ checkTest(alldone)
   return 0;
 }
 
-// will return 0 if never called before, other return 1
+// will return 0 if never called before, other return 1F
 int 
 alreadyExecuted(int enter)
 {
@@ -267,9 +281,10 @@ vmStarted()
 
   // get blocks started
   Block *block;
-
+  printf("In vmStarted.\n");
   Q_FOREACH(block, getBlockList(), blockLink) {
+    //block=getBlock(id);
     startBlock(block);
-  }
+ }
   Q_ENDFOREACH(getBlockList());
 }
