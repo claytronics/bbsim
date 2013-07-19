@@ -130,7 +130,7 @@ int main(int argc, char** argv)
          pathToFile=argv[1];
         argc--;
         argv++;
-        printf("The path is %s",pathToFile);        
+        printf("The path is %s\n",pathToFile);        
         break; 
         
       default:
