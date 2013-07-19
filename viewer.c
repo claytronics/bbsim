@@ -32,7 +32,7 @@
 #include "block.h"
 
 #include "vm.h"
-
+#include "config.h"
 #define ACCEL_LOCK_KEY 'z'
 #define VIEW_RESET_KEY 'x'
 
@@ -276,7 +276,7 @@ void add_block (int screenX, int screenY)
 //	if (block->neighbors[face] != NULL)
 //		return;
 
-	newBlock = createBlock(x, y, z);
+	newBlock = createBlock(x, y, z,pathToFile);
 	fprintf(stderr, "block created");
 	if (newBlock == NULL)
 	{

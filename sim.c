@@ -55,7 +55,6 @@ void help(void)
   fprintf(stderr, "\t-R <num>\tgenerates a random block configuration of <num> blocks\n");
   fprintf(stderr, "\t-d\t\tdebug statements enabled\n");
   fprintf(stderr, "\t-n\t\tdisables graphics\n");
-
   exit(0);
 }
 
@@ -79,6 +78,7 @@ int main(int argc, char** argv)
    int    orig_argc = argc;
    bool   configured = false;
    bool   graphics = true;
+   pathToFile=NULL;
    char* port = "5000";
    numberOfRobots = 0;		/* number of blinkblocks in system */
    --argc;
@@ -126,6 +126,13 @@ int main(int argc, char** argv)
     	  argc--;  argv++;
     	  configured = true;
     	  break;
+      case 'f':
+         pathToFile=argv[1];
+        argc--;
+        argv++;
+        printf("The path is %s\n",pathToFile);        
+        break; 
+        
       default:
     	  help();
       }
@@ -133,8 +140,12 @@ int main(int argc, char** argv)
    }
 
    if (debug) fprintf(stdout, "initial configuration\n");
-
-   // start timer
+    if(pathToFile==NULL) 
+    {
+    printf("Please enter the file path using the -f flag\n"); 
+    exit(0);
+    }
+    // start timer
    
    initTimeKeeping();
 
@@ -157,9 +168,9 @@ int main(int argc, char** argv)
      help();
    } else {
      if (configFile != NULL)
-       readConfig(configFile);
+       readConfig(configFile, pathToFile);
      else
-       randomConfig(configCount);
+       randomConfig(configCount,pathToFile);
    }
 
    if (graphics) {
@@ -270,7 +281,7 @@ vmStarted()
 
   // get blocks started
   Block *block;
-  printf("In vmStarted.\n");
+ // printf("In vmStarted.\n");
   Q_FOREACH(block, getBlockList(), blockLink) {
     //block=getBlock(id);
     startBlock(block);

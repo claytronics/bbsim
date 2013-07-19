@@ -7,6 +7,6 @@ color(X, 0).
 
 color(X, N)
    -o setColor2(X, N),
-      color(X, (N + 1) % NUM_COLORS)@+1000ms.
+      color(X, (N + 1) % num_colors)@+1000ms.
 
 

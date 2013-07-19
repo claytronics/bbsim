@@ -46,12 +46,12 @@ vmcmd2str(VMCommand cmd)
   return "??";
 }
 
-static char*
+/*static char*
 msg2string(message* m, char* buffer)
 {
   static char lbuffer[512];
   if (buffer == 0) buffer = lbuffer;
-  sprintf(buffer, "%2d@%5d %6s %2d", (int)m->node, (int)m->timestamp, vmcmd2str(m->command), (int)m->size);
+ // sprintf(buffer, "%2d@%5d %6s %2d", (int)m->node, (int)m->timestamp, vmcmd2str(m->command), (int)m->size);
   if (m->size == 3*sizeof(message_type)) return buffer;
   char* p = buffer+strlen(buffer);
   switch (m->command) {
@@ -108,7 +108,7 @@ msg2string(message* m, char* buffer)
     }
   }
   return buffer;
-}
+}*/
 
 static struct sockaddr_in cliaddr;
 static socklen_t clilen;
@@ -169,7 +169,7 @@ static sendit(message* msg)
   while (mhead != NULL) {
     message* m = mhead->content;
     int bytes = m->size + sizeof(message_type);
-    fprintf(stderr, "Sending: %s\n", msg2string(m, 0));
+    //fprintf(stderr, "Sending: %s\n", msg2string(m, 0));
     int status = sendto(connfd, 
 			m,
 			bytes, 
@@ -187,7 +187,7 @@ static sendit(message* msg)
 
   // finally, send this msg
   int bytes = msg->size + sizeof(message_type);
-  fprintf(stderr, "Sending: %s\n", msg2string(msg, 0));
+ // fprintf(stderr, "Sending: %s\n", msg2string(msg, 0));
   int status = sendto(connfd, 
 		      msg, 
 		      bytes, 
@@ -215,10 +215,10 @@ msg2vm(Block* dest, VMCommand cmd, Time timestamp, ...)
   va_start(ap,timestamp);
 
   // now send
-  if (msgverbose)
-    fprintf(stderr, 
-            "sending %s -> %s @ %d\n", 
-            vmcmd2str(cmd), (dest == NULL) ? "VM" : nodeIDasString(dest->id, 0), timestamp);
+ // if (msgverbose)
+   // fprintf(stderr, 
+     //       "sending %s -> %s @ %d\n", 
+      //      vmcmd2str(cmd), (dest == NULL) ? "VM" : nodeIDasString(dest->id, 0), timestamp);
 
   int size = 3;
   switch (cmd) {
@@ -277,31 +277,30 @@ handle_data(message *msg)
 {
   NodeID nodeid = msg->node;
   Block* block = getBlock(nodeid);
-  Time ts = (Time)msg->timestamp;
+  //Time ts = (Time)msg->timestamp;
   if(block!=NULL)
   block->msgTargetsDelta++;
-  if (1 || msgverbose) fprintf(stderr, "Got message of %d from %u @ %u\n", (int)msg->size, (int)nodeid, (int)ts);
+//  if (1 || msgverbose) fprintf(stderr, "Got message of %d from %u @ %u\n", (int)msg->size, (int)nodeid, (int)ts);
   if (block == NULL) err("unknown block with id %d in msg\n", nodeid);
   switch(msg->command) {
   case SET_COLOR:
-    printf("SET_COLOR received for block : %d | connfd : %d\n",block->id,block->connfd);
+    //printf("SET_COLOR received for block : %d | connfd : %d\n",block->id,block->connfd);
  
-    fprintf(stderr, "%02u <- LEDS = (%d, %d, %d, %d)\n",
-	    (int)nodeid, (int)msg->data.color.r, (int)msg->data.color.g, (int)msg->data.color.b, (int)msg->data.color.i);
+    //fprintf(stderr, "%02u <- LEDS = (%d, %d, %d, %d)\n",
+	  //  (int)nodeid, (int)msg->data.color.r, (int)msg->data.color.g, (int)msg->data.color.b, (int)msg->data.color.i);
     block->simLEDr=msg->data.color.r;
     block->simLEDg=msg->data.color.g;
     block->simLEDb=msg->data.color.b;
     block->simLEDi=msg->data.color.i;
     break;
 	
-	case SEND_MESSAGE:
-	printf("SEND_MESSAGE received\n");
-	NodeID tempID=msg->node;
-	msg->node=msg->data.send_message.dest_nodeID;
-	msg->data.send_message.dest_nodeID=tempID;
-	msg->command=RECEIVE_MESSAGE;
-	sendit(msg);
-	break;
+	 case SEND_MESSAGE:
+msg->node=msg->data.send_message.dest_nodeID;
+NodeID tempID=msg->node;
+msg->data.send_message.dest_nodeID=tempID;
+msg->command=RECEIVE_MESSAGE;
+sendit(msg);
+break;
 	
   default:
     fprintf(stderr, "Unknown msg: %d\n", (int)msg->command);
@@ -339,7 +338,7 @@ force_read(int sock)
   }
   assert(offset == (size_t)data.size);
 
-  fprintf(stderr, "Got Msg: %s\n", msg2string(&data, 0));
+ // fprintf(stderr, "Got Msg: %s\n", msg2string(&data, 0));
   //message_type ret = 
   handle_data(&data);
   return 1;
@@ -375,7 +374,7 @@ listener(void* ignoreme)
   	   
 	sock=Open_listenfd(port);
 
-	printf("Listening on port:%d\n",port);
+//	printf("Listening on port:%d\n",port);
     /* Set up the fd_set */
     FD_ZERO(&socks);
     FD_SET(sock, &socks);
@@ -409,12 +408,12 @@ listener(void* ignoreme)
           if(allConnected){
             startBlock(b);
           }
-					printf("Accepted a connection.\n");
+	//				printf("Accepted a connection.\n");
 				   	if (newsock == -1) {
                         perror("accept");
                     }
 					else {
-                        printf("Got a connection from %s on port %d\n", inet_ntoa(their_addr.sin_addr), htons(their_addr.sin_port));
+ //                       printf("Got a connection from %s on port %d\n", inet_ntoa(their_addr.sin_addr), htons(their_addr.sin_port));
 						FD_SET(newsock, &socks);
                         if (newsock > maxsock) {
                             maxsock = newsock;

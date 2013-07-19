@@ -4,10 +4,10 @@
 char* configFile;
 int   configCount;
 int** testData;
+char* pathToFile;
 
-
-void randomConfig(int);
-void readConfig(char *name);
+void randomConfig(int,char *pathToFile);
+void readConfig(char *name,char *pathToFile);
 int configtest(char* name);
 
 #endif

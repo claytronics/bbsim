@@ -6,12 +6,11 @@
 #include "sim.h"
 #include "csapp.h"
 #include "heap.h"
-
+#include "config.h"
 static unsigned int nextBlockId = 1;
 static BlockList blockList;  // = Q_STATIC_INIT;
 static Block** allBlocks = NULL;
 static int allBlockSize = 0;
-
 // initializes the access mutex
 void initBlockList()
 {
@@ -44,7 +43,7 @@ startBlock(Block *block)
 }
 
 Block *
-createBlock(int x, int y, int z)
+createBlock(int x, int y, int z, char *pathToFile)
 {
   Block* newBlock;
 
@@ -80,7 +79,10 @@ createBlock(int x, int y, int z)
    char* sched="sl";
    path[0]="/home/ankit/Desktop/branch/meld/meld";
    path[1]="-f";
-	path[2]=prog;
+if(pathToFile!=NULL)
+	path[2]=pathToFile;
+else
+    path[2]=prog;
 	path[3]="-c";
 	path[4]=sched;
 	path[5]=NULL;
