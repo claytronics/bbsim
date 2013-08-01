@@ -128,7 +128,7 @@ getBlock(NodeID id)
 {
   if (id > nextBlockId) err("Asked for %d higher than num allocated blocks %d", id, nextBlockId);
   Block* block = allBlocks[id];
-  if (block == NULL) printf("Asked for %d which is not present in the list.\n",id);//err("Aksed for %d which has NULL entry in allBlocks", id);
+  if (block == NULL) ;//err("Asked for %d which is not present in the list.\n",id);//err("Aksed for %d which has NULL entry in allBlocks", id);
   if (block->destroyed); //err("Asked for %d which was destroyed", id);
   return block;
 }
