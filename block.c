@@ -74,10 +74,10 @@ createBlock(int x, int y, int z, char *pathToFile)
 
   //fprintf(stderr, "made block, inserting into Q\n");
   registerBlock(newBlock);
-   char* prog="/home/ankit/Desktop/branch/meld/examples/rainbow1.m";
+   char* prog="/home/ubuntu/Bureau/meld/meld/examples/rainbow1.m";
    char* path[6];
    char* sched="sl";
-   path[0]="/home/ankit/Desktop/branch/meld/meld";
+   path[0]="/home/ubuntu/Bureau/meld/meld";
    path[1]="-f";
 if(pathToFile!=NULL)
 	path[2]=pathToFile;
@@ -87,7 +87,7 @@ else
 	path[4]=sched;
 	path[5]=NULL;
    if(fork()==0){
-       execve("/home/ankit/Desktop/branch/meld/meld",path,NULL);
+       execve("/home/ubuntu/Bureau/meld/meld",path,NULL);
     }
     
 //  msg2vm(newBlock, CMD_CREATE, newBlock->localTime, 1, newBlock->id);
@@ -105,10 +105,10 @@ void  tellNeighborsDestroyed(Block *b, FaceBlock* list);
 void destroyBlock(Block *block)
 {
   FaceBlock neighbors[NUM_PORTS+1];
-  tellNeighborsDestroyed(block, neighbors);
   Q_REMOVE(&blockList, block, blockLink);
   block->destroyed = 1;
-  allBlocks[block->id] = NULL;
+  allBlocks[block->id] = NULL;  
+  tellNeighborsDestroyed(block, neighbors);
   free(block);
   // now set neighbor count
   int i;
